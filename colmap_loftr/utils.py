@@ -49,6 +49,47 @@ def estimate_relative_pose(kpts0, kpts1, K0, K1, thresh=1, conf=0.99999):
             ret = (R, t[:, 0], mask.ravel() > 0)
     return ret, E
 
+def run_geometric_verification(db_fpath, match_list_fpath, colmap_path="", hide_output=False, type="pairs"):
+    if hide_output:
+        pipe = subprocess.DEVNULL
+    else:
+        pipe = None
+    logfile_name = os.path.join('D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik', 'colmap_output.txt')
+    logfile = open(logfile_name, 'w')
+    
+    feat_output = subprocess.check_output(['COLMAP.bat', "matches_importer",
+                     "--database_path", db_fpath,
+                     "--match_list_path", match_list_fpath,
+                     "--match_type", type],
+                     universal_newlines=True)
+
+    logfile.write(feat_output)
+
+
+def run_mapper(db_fpath, img_path, out_path, colmap_path="", hide_output=False):
+    if hide_output:
+        pipe = subprocess.DEVNULL
+    else:
+        pipe = None
+    logfile_name = os.path.join('D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik', 'colmap_output.txt')
+    logfile = open(logfile_name, 'w')
+    feat_output = subprocess.check_output(['COLMAP.bat', "mapper",
+                     "--database_path", db_fpath,
+                     "--image_path", img_path,
+                     "--output_path", out_path,
+                    #  "--Mapper.tri_merge_max_reproj_error", "3",
+                    #  "--Mapper.filter_max_reproj_error", "2",
+                     "--Mapper.init_min_num_inliers", "5",
+                     "--Mapper.min_num_matches", "5",
+                     "--Mapper.abs_pose_min_num_inliers", "5",
+                     "--Mapper.abs_pose_min_inlier_ratio", "0.1",
+                     "--Mapper.ba_refine_focal_length", "0",
+                     "--Mapper.ba_refine_principal_point", "0",
+                     "--Mapper.ba_refine_extra_params", "0"],
+                     universal_newlines=True)
+
+    logfile.write(feat_output)
+
 if __name__ == '__main__':
     base_path = r'D:\HDR Surface Reconstruction\my_data\Bracketed Rubik'
     img_path = os.path.join(base_path, 'IMG_2014.jpg')

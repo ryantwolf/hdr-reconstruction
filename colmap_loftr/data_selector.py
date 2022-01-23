@@ -35,4 +35,7 @@ def copy_images_with_exposure(image_dir, output_dir, exposure_levels):
 if __name__ == '__main__':
     base_dir = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik'
     # mass_rename(os.path.join(base_dir, 'images_640_480'))
-    copy_images_with_exposure(os.path.join(base_dir, 'images_640_480'), os.path.join(base_dir, 'images_640_480_-3_0'), [-3, 0])
+    image_dir = os.path.join(base_dir, r'images_640_480')
+    output_dir = os.path.join(base_dir, r'images_640_480_0')
+    exposure_levels = [0]
+    copy_images_with_exposure(image_dir, output_dir, exposure_levels)

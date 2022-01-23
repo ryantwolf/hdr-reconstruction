@@ -1,15 +1,15 @@
-import matplotlib.pyplot as plt
 import cv2
 import kornia as K
 import kornia.feature as KF
+from kornia_moons.feature import *
 import numpy as np
 import torch
 import os
 from colmap_database import COLMAPDatabase
-import torchvision
 import subprocess
-from colmap_from_matches_loftr import create_db_from_matches
+from colmap_from_matches_loftr import run_colmap_matches_loftr
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Running with device: {device}')
@@ -19,7 +19,7 @@ print(f'Running with device: {device}')
 # $ colmap feature_extractor \
 #    --database_path $DATASET_PATH/database.db \
 #    --image_path $DATASET_PATH/images
-def run_colmap(basedir):
+def run_colmap(basedir, image_dir, database_path):
     """
     Runs the COLMAP feature extractor on the images in the given directory.
     """
@@ -30,8 +30,8 @@ def run_colmap(basedir):
     # Run the feature mapper just to get the camera parameters
     feature_extractor_args = [
         'COLMAP.bat', 'feature_extractor', 
-            '--database_path', os.path.join(basedir, 'database.db'), 
-            '--image_path', os.path.join(basedir, 'images'),
+            '--database_path', database_path, 
+            '--image_path', image_dir,
             '--ImageReader.single_camera', '1',
             # '--SiftExtraction.use_gpu', '0',
     ]
@@ -51,17 +51,12 @@ def clean_database(database_path):
 def load_torch_image(fname):
     img = K.image_to_tensor(cv2.imread(fname), False).float() /255.
     img = K.color.bgr_to_rgb(img)
-    img.to(device)
+    img = img.to(device)
     return img
 
 def get_keypoints_loftr(img1, img2):
-    # resize = torchvision.transforms.Resize(1024)
-    # img1 = resize(img1)
-    # img2 = resize(img2)
-    # print(img1.shape)
-    # print(img2.shape)
-
     matcher = KF.LoFTR(pretrained='outdoor')
+    matcher.to(device)
 
     input_dict = {"image0": K.color.rgb_to_grayscale(img1), # LofTR works on grayscale images only 
                 "image1": K.color.rgb_to_grayscale(img2)}
@@ -72,12 +67,44 @@ def get_keypoints_loftr(img1, img2):
     mkpts0 = correspondences['keypoints0'].cpu().numpy()
     mkpts1 = correspondences['keypoints1'].cpu().numpy()
 
+    if mkpts0.shape[0] >= 10 and mkpts1.shape[0] >= 10:   
+        H, inliers = cv2.findFundamentalMat(mkpts0, mkpts1, cv2.USAC_MAGSAC, 0.5, 0.999, 100000)
+        inliers = inliers > 0
+        inliers = inliers.squeeze()
+
+        mkpts0 = mkpts0[inliers]
+        mkpts1 = mkpts1[inliers]
+
     return mkpts0, mkpts1
 
 def write_matches_file(fname, img_name_pairs):
     with open(fname, 'w') as f:
         for img1, img2 in img_name_pairs:
             f.write(f'{img1} {img2}\n')
+
+def old_run_colmap_mapper(basedir):
+    logfile_name = os.path.join(basedir, 'colmap_output.txt')
+    logfile = open(logfile_name, 'w')
+
+    sparse_dir = os.path.join(basedir, 'sparse')
+    if not os.path.exists(sparse_dir):
+        os.makedirs(sparse_dir)
+
+    mapper_args = [
+        'COLMAP.bat', 'mapper',
+            '--database_path', os.path.join(basedir, 'database.db'),
+            '--image_path', os.path.join(basedir, 'images'),
+            '--output_path', sparse_dir, # --export_path changed to --output_path in colmap 3.6
+            '--Mapper.num_threads', '16',
+            '--Mapper.init_min_tri_angle', '4',
+            '--Mapper.multiple_models', '0',
+            '--Mapper.extract_colors', '0',
+    ]
+
+    map_output = ( subprocess.check_output(mapper_args, universal_newlines=True) )
+    logfile.write(map_output)
+    logfile.close()
+    print('Sparse map created')
 
 def create_pairwise_keypoints_loftr(image_dir):
     """
@@ -100,37 +127,45 @@ def create_pairwise_keypoints_loftr(image_dir):
             key_points1, key_points2 = get_keypoints_loftr(img1, img2)
             combined = np.concatenate((key_points1, key_points2), axis=1)
             data_all['pair'][(img_names[i], img_names[j])] = {}
-            data_all['pair'][(img_names[i], img_names[j])]['kpts_loftr'] = combined
-    
-    # Write the matches file
-    matches_file = os.path.join(image_dir, 'matches.txt')
-    write_matches_file(matches_file, pairs)
+            data_all['pair'][(img_names[i], img_names[j])]['kpts_loftr'] = combined    
 
-    return data_all, matches_file
+    return data_all, pairs
 
 if __name__ == '__main__':
     basedir = 'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik'
+    # img1 = load_torch_image(os.path.join(basedir, 'images', '3.jpg'))
+    # img2 = load_torch_image(os.path.join(basedir, 'images', '10.jpg'))
+    # get_keypoints_loftr(img1, img2)
+    # exit()
+    out_dir = os.path.join(basedir, 'loftr')
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
     image_dir = os.path.join(basedir, r'images')
-    database_path = os.path.join(basedir, 'database.db')
+    database_path = os.path.join(out_dir, 'database.db')
     data_all_path = os.path.join(basedir, 'data_all.pkl')
 
     # If the database file doesn't exist
     if not os.path.exists(database_path):
         print('Running COLMAP')
-        run_colmap(basedir)
+        run_colmap(basedir, image_dir, database_path)
     print('Cleaning database')
     clean_database(database_path)
 
     # If the data_all file doesn't exist
     if not os.path.exists(data_all_path):
         print('Creating pairwise keypoints')
-        data_all, matches_file = create_pairwise_keypoints_loftr(image_dir)
+        data_all, pairs = create_pairwise_keypoints_loftr(image_dir)
         # Write the data_all file
         with open(data_all_path, 'wb') as f:
             torch.save(data_all, f)
+        # Write the matches file
+        matches_file = os.path.join(basedir, 'match_list.txt')
+        write_matches_file(matches_file, pairs)
     else:
         with open(data_all_path, 'rb') as f:
             data_all = torch.load(f)
-        matches_file = os.path.join(image_dir, 'matches.txt')
-
-    create_db_from_matches(data_all, matches_file, database_path, image_dir)
+        matches_file = os.path.join(basedir, 'match_list.txt')
+    
+    run_colmap_matches_loftr(basedir, image_dir, data_all)
+    print('Done')

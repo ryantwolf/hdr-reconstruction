@@ -121,6 +121,7 @@ CREATE_ALL_LOFTR = "; ".join([
 ])
 
 TRUNCATE_LOFTR = "; ".join([
+    "DELETE FROM sqlite_sequence WHERE name = 'images'",
     "DELETE FROM images",
     "DELETE FROM keypoints",
     "DELETE FROM descriptors",
@@ -253,7 +254,10 @@ class COLMAPDatabase(sqlite3.Connection):
         """
         Delete all the tables created by the feature extractor except the camera
         """
-        self.executescript(TRUNCATE_LOFTR)
+        try:
+            self.executescript(TRUNCATE_LOFTR)
+        except sqlite3.OperationalError:
+            pass
 
 
 def example_usage():

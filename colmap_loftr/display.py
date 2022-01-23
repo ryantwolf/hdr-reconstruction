@@ -12,4 +12,7 @@ print(f'Tables: {tables}')
 for table in tables:
     data = pd.read_sql_query(f'SELECT * FROM {table}', con)
     print(f'{table}:')
+    print(data.columns)
+    if table == 'two_view_geometries':
+        print(data['data'])
     print(f'{data}')
