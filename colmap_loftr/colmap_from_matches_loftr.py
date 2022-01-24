@@ -97,15 +97,12 @@ def create_db_from_matches(data_all, match_list_fpath, db_fpath, img_dir, inlier
     return img_names_all, matches_all, num_matches
 
 
-def run_colmap_matches_loftr(exp_dir, img_dir, data_all, colmap_dir="", hide_output=True, inliers=False):
-    dir_name = "loftr" if not inliers else "loftr_inliers"
-    out_dir = os.path.join(exp_dir, dir_name)
-    
+def run_colmap_matches_loftr(out_dir, img_dir, data_all, colmap_dir="", hide_output=True, inliers=False):  
     colmap_out_dir = os.path.join(out_dir, "sparse")
     os.makedirs(colmap_out_dir, exist_ok=True)
     db_fpath = os.path.join(out_dir, "database.db")
 
-    match_list_fpath = os.path.join(exp_dir, "match_list.txt")
+    match_list_fpath = os.path.join(out_dir, "match_list.txt")
     assert os.path.isfile(match_list_fpath)
 
     img_names_all, matches_all, num_matches = create_db_from_matches(
@@ -113,7 +110,7 @@ def run_colmap_matches_loftr(exp_dir, img_dir, data_all, colmap_dir="", hide_out
     )
 
     if num_matches > 0:
-        run_geometric_verification(db_fpath, match_list_fpath, colmap_path=colmap_dir, hide_output=hide_output)
-        run_mapper(db_fpath, img_dir, colmap_out_dir, colmap_path=colmap_dir, hide_output=hide_output)
+        run_geometric_verification(out_dir, db_fpath, match_list_fpath, colmap_path=colmap_dir, hide_output=hide_output)
+        run_mapper(out_dir, db_fpath, img_dir, colmap_out_dir, colmap_path=colmap_dir, hide_output=hide_output)
     return img_names_all, matches_all, colmap_out_dir
     

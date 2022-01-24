@@ -49,13 +49,13 @@ def estimate_relative_pose(kpts0, kpts1, K0, K1, thresh=1, conf=0.99999):
             ret = (R, t[:, 0], mask.ravel() > 0)
     return ret, E
 
-def run_geometric_verification(db_fpath, match_list_fpath, colmap_path="", hide_output=False, type="pairs"):
+def run_geometric_verification(out_dir, db_fpath, match_list_fpath, colmap_path="", hide_output=False, type="pairs"):
     if hide_output:
         pipe = subprocess.DEVNULL
     else:
         pipe = None
-    logfile_name = os.path.join('D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik', 'colmap_output.txt')
-    logfile = open(logfile_name, 'w')
+    logfile_name = os.path.join(out_dir, 'colmap_output.txt')
+    logfile = open(logfile_name, 'a')
     
     feat_output = subprocess.check_output(['COLMAP.bat', "matches_importer",
                      "--database_path", db_fpath,
@@ -64,15 +64,16 @@ def run_geometric_verification(db_fpath, match_list_fpath, colmap_path="", hide_
                      universal_newlines=True)
 
     logfile.write(feat_output)
+    logfile.close()
 
 
-def run_mapper(db_fpath, img_path, out_path, colmap_path="", hide_output=False):
+def run_mapper(out_dir, db_fpath, img_path, out_path, colmap_path="", hide_output=False):
     if hide_output:
         pipe = subprocess.DEVNULL
     else:
         pipe = None
-    logfile_name = os.path.join('D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik', 'colmap_output.txt')
-    logfile = open(logfile_name, 'w')
+    logfile_name = os.path.join(out_dir, 'colmap_output.txt')
+    logfile = open(logfile_name, 'a')
     feat_output = subprocess.check_output(['COLMAP.bat', "mapper",
                      "--database_path", db_fpath,
                      "--image_path", img_path,
@@ -89,6 +90,7 @@ def run_mapper(db_fpath, img_path, out_path, colmap_path="", hide_output=False):
                      universal_newlines=True)
 
     logfile.write(feat_output)
+    logfile.close()
 
 if __name__ == '__main__':
     base_path = r'D:\HDR Surface Reconstruction\my_data\Bracketed Rubik'

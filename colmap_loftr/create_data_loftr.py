@@ -5,11 +5,13 @@ from kornia_moons.feature import *
 import numpy as np
 import torch
 import os
-from colmap_database import COLMAPDatabase
 import subprocess
-from colmap_from_matches_loftr import run_colmap_matches_loftr
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+
+from colmap_from_matches_loftr import run_colmap_matches_loftr
+from colmap_database import COLMAPDatabase
+from pose_utils import gen_poses
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Running with device: {device}')
@@ -19,13 +21,13 @@ print(f'Running with device: {device}')
 # $ colmap feature_extractor \
 #    --database_path $DATASET_PATH/database.db \
 #    --image_path $DATASET_PATH/images
-def run_colmap(basedir, image_dir, database_path):
+def run_colmap(out_dir, image_dir, database_path):
     """
     Runs the COLMAP feature extractor on the images in the given directory.
     """
     
-    logfile_name = os.path.join(basedir, 'colmap_output.txt')
-    logfile = open(logfile_name, 'w')
+    logfile_name = os.path.join(out_dir, 'colmap_output.txt')
+    logfile = open(logfile_name, 'a')
     
     # Run the feature mapper just to get the camera parameters
     feature_extractor_args = [
@@ -84,7 +86,7 @@ def write_matches_file(fname, img_name_pairs):
 
 def old_run_colmap_mapper(basedir):
     logfile_name = os.path.join(basedir, 'colmap_output.txt')
-    logfile = open(logfile_name, 'w')
+    logfile = open(logfile_name, 'a')
 
     sparse_dir = os.path.join(basedir, 'sparse')
     if not os.path.exists(sparse_dir):
@@ -133,24 +135,20 @@ def create_pairwise_keypoints_loftr(image_dir):
 
 if __name__ == '__main__':
     basedir = 'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik'
-    # img1 = load_torch_image(os.path.join(basedir, 'images', '3.jpg'))
-    # img2 = load_torch_image(os.path.join(basedir, 'images', '10.jpg'))
-    # get_keypoints_loftr(img1, img2)
-    # exit()
-    out_dir = os.path.join(basedir, 'loftr')
+    out_dir = os.path.join(basedir, 'loftr_-3_0')
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    image_dir = os.path.join(basedir, r'images')
+    image_dir = os.path.join(basedir, r'images_640_480_-3_0')
     database_path = os.path.join(out_dir, 'database.db')
-    data_all_path = os.path.join(basedir, 'data_all.pkl')
+    data_all_path = os.path.join(out_dir, 'data_all.pkl')
 
     # If the database file doesn't exist
     if not os.path.exists(database_path):
         print('Running COLMAP')
-        run_colmap(basedir, image_dir, database_path)
-    print('Cleaning database')
-    clean_database(database_path)
+        run_colmap(out_dir, image_dir, database_path)
+        print('Cleaning database')
+        clean_database(database_path)
 
     # If the data_all file doesn't exist
     if not os.path.exists(data_all_path):
@@ -160,12 +158,17 @@ if __name__ == '__main__':
         with open(data_all_path, 'wb') as f:
             torch.save(data_all, f)
         # Write the matches file
-        matches_file = os.path.join(basedir, 'match_list.txt')
+        matches_file = os.path.join(out_dir, 'match_list.txt')
         write_matches_file(matches_file, pairs)
     else:
         with open(data_all_path, 'rb') as f:
             data_all = torch.load(f)
-        matches_file = os.path.join(basedir, 'match_list.txt')
+        matches_file = os.path.join(out_dir, 'match_list.txt')
     
-    run_colmap_matches_loftr(basedir, image_dir, data_all)
+    if not os.path.exists(os.path.join(out_dir, 'sparse')):
+        run_colmap_matches_loftr(out_dir, image_dir, data_all)
+        print('Created COLMAP binaries')
+
+    print('Generating poses')
+    gen_poses(out_dir)
     print('Done')

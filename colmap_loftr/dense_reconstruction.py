@@ -10,14 +10,12 @@ def run_dense_colmap(basedir, image_dir, sparse_dir):
         '--output_type', 'COLMAP',
         '--max_image_size', '2000'
     ]
-    print(' '.join(undistorter_args))
 
     undistorter_output = ( subprocess.check_output(undistorter_args, universal_newlines=True) )
     # Write output to log file
     logfile_name = os.path.join(basedir, 'colmap_output.txt')
-    logfile = open(logfile_name, 'w')
+    logfile = open(logfile_name, 'a')
     logfile.write(undistorter_output)
-    logfile.close()
 
     """
     colmap patch_match_stereo \
@@ -32,6 +30,7 @@ def run_dense_colmap(basedir, image_dir, sparse_dir):
     ]
 
     patch_match_stereo_output = ( subprocess.check_output(patch_match_stereo_args, universal_newlines=True) )
+    logfile.write(patch_match_stereo_output)
 
     """
     $ colmap stereo_fusion \
@@ -48,6 +47,7 @@ def run_dense_colmap(basedir, image_dir, sparse_dir):
     ]
 
     stereo_fusion_output = ( subprocess.check_output(stereo_fusion_args, universal_newlines=True) )
+    logfile.write(stereo_fusion_output)
 
     """
     $ colmap poisson_mesher \
@@ -60,6 +60,7 @@ def run_dense_colmap(basedir, image_dir, sparse_dir):
     ]
 
     poisson_mesher_output = ( subprocess.check_output(poisson_mesher_args, universal_newlines=True) )
+    logfile.write(poisson_mesher_output)
 
     """
     $ colmap delaunay_mesher \
@@ -72,13 +73,15 @@ def run_dense_colmap(basedir, image_dir, sparse_dir):
     ]
 
     delaunay_mesher_output = ( subprocess.check_output(delaunay_mesher_args, universal_newlines=True) )
+    logfile.write(delaunay_mesher_output)
+    logfile.close()
     
     print('Dense construction completed')
 
 if __name__ == '__main__':
     base = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik\loftr'
     image_dir = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik\images'
-    sparse_dir = os.path.join(base, r'sparse\5')
+    sparse_dir = os.path.join(base, r'sparse\0')
     dense_dir = os.path.join(base, 'dense')
     if not os.path.exists(dense_dir):
         os.makedirs(dense_dir)

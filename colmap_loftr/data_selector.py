@@ -21,21 +21,23 @@ def copy_images_with_exposure(image_dir, output_dir, exposure_levels):
     Args:
         image_dir: The directory containing the images
         output_dir: The directory to copy the images to
-        exposure_levels: A list of desired exposure levels to copy where each level ranges from -3 to 3 (in stops)
+        exposure_levels: A list of desired exposure levels (in stops) to copy where each level ranges from -3 to 3
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     ev_7 = np.array(exposure_levels, dtype=int) + 3
     files = os.listdir(image_dir)
-    for ev in ev_7:
-        for i in range(ev, len(files), 7):
-            shutil.copyfile(os.path.join(image_dir, f'{i}.JPG'), os.path.join(output_dir, f'{i}.JPG'))
+    ev_index = 0
+    for i in range(0, len(files), 7):
+        target_number = i + ev_7[ev_index]
+        shutil.copyfile(os.path.join(image_dir, f'{target_number}.JPG'), os.path.join(output_dir, f'{target_number}.JPG'))
+        ev_index = (ev_index + 1) % len(exposure_levels)
 
 if __name__ == '__main__':
     base_dir = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik'
     # mass_rename(os.path.join(base_dir, 'images_640_480'))
+    exposure_levels = [-3, 0]
     image_dir = os.path.join(base_dir, r'images_640_480')
-    output_dir = os.path.join(base_dir, r'images_640_480_0')
-    exposure_levels = [0]
+    output_dir = os.path.join(base_dir, '_'.join(['images_640_480'] + [str(i) for i in exposure_levels]))
     copy_images_with_exposure(image_dir, output_dir, exposure_levels)
