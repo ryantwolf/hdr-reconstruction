@@ -1,5 +1,6 @@
 from tonemapper import tonemap_images
 from mask_maker import make_masks
+from matrix_converter import convert_blender_json_npz
 import os
 
 def create_dirs(out_dir):
@@ -20,3 +21,4 @@ if __name__ =='__main__':
     image_dir, mask_dir = create_dirs(out_dir)
     tonemap_images(exr_dir, image_dir, exposure_levels)
     make_masks(exr_dir, mask_dir)
+    convert_blender_json_npz(os.path.join(exr_dir, 'transforms.json'), os.path.join(out_dir, 'cameras_sphere.npz'))

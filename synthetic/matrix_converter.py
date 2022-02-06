@@ -1,8 +1,7 @@
 import json
 import numpy as np
-import cv2
 
-def load_blender_json(json_path, out_path):
+def convert_blender_json_npz(json_path, out_path):
     with open(json_path, 'r') as f:
         camera_dict = json.load(f)
     camera_list = sorted(list(camera_dict.keys()))[2:]
@@ -25,4 +24,4 @@ def load_blender_json(json_path, out_path):
 if __name__ == '__main__':
     json_path = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/hotdog_tonemapped_0/transforms.json'
     out_path = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/hotdog_tonemapped_0/cameras_sphere_hotdog_0.npz'
-    load_blender_json(json_path, out_path)
+    convert_blender_json_npz(json_path, out_path)
