@@ -23,6 +23,6 @@ def load_blender_json(json_path, out_path):
     np.savez(out_path, **out_camera_dict)
 
 if __name__ == '__main__':
-    json_path = r'C:\Users\ryant\Repos\hdr-reconstruction\synthetic\transforms.json'
-    out_path = r'C:\Users\ryant\Repos\hdr-reconstruction\synthetic\cameras_sphere_hotdog_0.npz'
+    json_path = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/hotdog_tonemapped_0/transforms.json'
+    out_path = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/hotdog_tonemapped_0/cameras_sphere_hotdog_0.npz'
     load_blender_json(json_path, out_path)

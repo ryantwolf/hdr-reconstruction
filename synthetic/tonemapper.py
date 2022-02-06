@@ -1,4 +1,5 @@
 import os
+os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
 import cv2
 import numpy as np
 
@@ -24,8 +25,8 @@ def tonemap_images(image_dir, out_dir, exposure_levels, gamma=0.5):
     np.save(os.path.join(out_dir, "exposure_levels.npy"), np.array(exposure_map))
 
 if __name__ == '__main__':
-    image_dir = r'D:\HDR_Surface_Reconstruction\my_data\view70_samples512_no_display_openexr_P'
-    out_dir = r'D:\HDR_Surface_Reconstruction\my_data\hotdog_tonemapped_0'
-    exposure_levels = [0]
+    image_dir = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/view70_samples512_no_display_openexr_P'
+    out_dir = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/hotdog_tonemapped_0_3'
+    exposure_levels = [0, 3]
     tonemap_images(image_dir, out_dir, exposure_levels)
             
