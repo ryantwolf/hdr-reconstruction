@@ -17,6 +17,8 @@ def resize_dir(image_dir, output_dir, width, height):
 
 if __name__ == '__main__':
     # Resize the bracketed rubik images
-    base_path = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik\images'
-    output_path = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik\images_640_480'
+    # base_path = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik\images'
+    # output_path = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik\images_640_480'
+    base_path = '/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/v100_rubik_-1/full_res'
+    output_path = '/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/v100_rubik_-1/images_640_480'
     resize_dir(base_path, output_path, 640, 480)

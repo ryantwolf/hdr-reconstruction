@@ -31,7 +31,7 @@ def run_colmap(out_dir, image_dir, database_path):
     
     # Run the feature mapper just to get the camera parameters
     feature_extractor_args = [
-        'COLMAP.bat', 'feature_extractor', 
+        'colmap', 'feature_extractor', 
             '--database_path', database_path, 
             '--image_path', image_dir,
             '--ImageReader.single_camera', '1',
@@ -93,7 +93,7 @@ def old_run_colmap_mapper(basedir):
         os.makedirs(sparse_dir)
 
     mapper_args = [
-        'COLMAP.bat', 'mapper',
+        'colmap', 'mapper',
             '--database_path', os.path.join(basedir, 'database.db'),
             '--image_path', os.path.join(basedir, 'images'),
             '--output_path', sparse_dir, # --export_path changed to --output_path in colmap 3.6
@@ -134,12 +134,13 @@ def create_pairwise_keypoints_loftr(image_dir):
     return data_all, pairs
 
 if __name__ == '__main__':
-    basedir = 'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik'
-    out_dir = os.path.join(basedir, 'loftr_-3_0')
+    # basedir = 'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik'
+    basedir = '/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/Bracketed_Rubik'
+    out_dir = os.path.join(basedir, 'full_loftr_0')
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    image_dir = os.path.join(basedir, r'images_640_480_-3_0')
+    image_dir = os.path.join(basedir, r'images_640_480_0')
     database_path = os.path.join(out_dir, 'database.db')
     data_all_path = os.path.join(out_dir, 'data_all.pkl')
 

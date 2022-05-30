@@ -57,7 +57,7 @@ def run_geometric_verification(out_dir, db_fpath, match_list_fpath, colmap_path=
     logfile_name = os.path.join(out_dir, 'colmap_output.txt')
     logfile = open(logfile_name, 'a')
     
-    feat_output = subprocess.check_output(['COLMAP.bat', "matches_importer",
+    feat_output = subprocess.check_output(['colmap', "matches_importer",
                      "--database_path", db_fpath,
                      "--match_list_path", match_list_fpath,
                      "--match_type", type],
@@ -74,7 +74,7 @@ def run_mapper(out_dir, db_fpath, img_path, out_path, colmap_path="", hide_outpu
         pipe = None
     logfile_name = os.path.join(out_dir, 'colmap_output.txt')
     logfile = open(logfile_name, 'a')
-    feat_output = subprocess.check_output(['COLMAP.bat', "mapper",
+    feat_output = subprocess.check_output(['colmap', "mapper",
                      "--database_path", db_fpath,
                      "--image_path", img_path,
                      "--output_path", out_path,

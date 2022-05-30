@@ -35,9 +35,10 @@ def copy_images_with_exposure(image_dir, output_dir, exposure_levels):
         ev_index = (ev_index + 1) % len(exposure_levels)
 
 if __name__ == '__main__':
-    base_dir = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik'
-    # mass_rename(os.path.join(base_dir, 'images_640_480'))
-    exposure_levels = [-3, 0]
-    image_dir = os.path.join(base_dir, r'images_640_480')
-    output_dir = os.path.join(base_dir, '_'.join(['images_640_480'] + [str(i) for i in exposure_levels]))
+    # base_dir = r'D:\HDR_Surface_Reconstruction\my_data\Bracketed_Rubik'
+    base_dir = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/'
+    # mass_rename(base_dir)
+    exposure_levels = [-3, 3]
+    image_dir = os.path.join(base_dir, 'v100_rubik')
+    output_dir = os.path.join(base_dir, '_'.join(['v100_rubik'] + [str(i) for i in exposure_levels]))
     copy_images_with_exposure(image_dir, output_dir, exposure_levels)

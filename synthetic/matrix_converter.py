@@ -6,8 +6,11 @@ def convert_blender_json_npz(json_path, out_path):
         camera_dict = json.load(f)
     camera_list = sorted(list(camera_dict.keys()))[2:]
     print(camera_list)
-    fact = 0.5
+    fact = 4 / 2
+    # fact = 0.6583 / 2 # hotdog
+    # fact = 2
     scale = np.array([[fact, 0, 0, 0], [0, fact, 0, 0], [0, 0, fact, 0], [0, 0, 0, 1]])
+    print(scale)
     idx = 0
     out_camera_dict = {}
     for i in camera_list:
@@ -22,6 +25,6 @@ def convert_blender_json_npz(json_path, out_path):
     np.savez(out_path, **out_camera_dict)
 
 if __name__ == '__main__':
-    json_path = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/hotdog_tonemapped_0/transforms.json'
-    out_path = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/hotdog_tonemapped_0/cameras_sphere_hotdog_0.npz'
+    json_path = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/new_cam/transforms.json'
+    out_path = r'/media/ryan/DATA/HDR_Surface_Reconstruction/my_data/new_cam/cameras_sphere_hotdog.npz'
     convert_blender_json_npz(json_path, out_path)
